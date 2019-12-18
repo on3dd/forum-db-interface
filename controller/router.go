@@ -11,7 +11,10 @@ import (
 func (u *UserController) NewRouter() *mux.Router {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/messages", logHandlerCall(u.GetMessages))
+	router.HandleFunc("/messages", logHandlerCall(u.GetMessages)).Methods("GET")
+	router.HandleFunc("/messages", logHandlerCall(u.AddMessage)).Methods("POST", "OPTIONS")
+
+	router.HandleFunc("/categories", logHandlerCall(u.GetCategories)).Methods("GET")
 
 	return router
 }
