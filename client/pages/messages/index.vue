@@ -41,10 +41,15 @@
               id="category-input"
               v-model="category"
               :state="categoryState"
-              :options="categories"
               size="sm"
               required
-            ></b-form-select>
+            >
+              <option v-for="(item, index) in categories"
+                      :key="index"
+                      :value="item"
+              >{{ item.name }}
+              </option>
+            </b-form-select>
           </b-form-group>
           <b-form-group
             :state="textState"
@@ -82,15 +87,16 @@
         data: () => ({
             currentPage: 1,
             perPage: 20,
-            category: '',
-            categories: ["pudge", "obama", "puke"],
+            category: null,
             categoryState: null,
+            currentCategory: '',
             text: '',
             textState: null,
         }),
         async asyncData({ $axios }) {
             const messages = await $axios.$get('http://localhost:8080/messages')
-            return { messages: messages }
+            const categories = await $axios.$get('http://localhost:8080/categories')
+            return { messages: messages, categories: categories }
         },
         components: {
             Navbar
@@ -106,14 +112,15 @@
         methods: {
             checkFormValidity() {
                 const valid = this.$refs.form.checkValidity()
-                this.textState = valid ? 'valid' : 'invalid'
+                this.categoryState = valid ? true : false
+                this.textState = valid ? true : false
                 return valid
             },
             resetModal() {
                 this.category = ''
                 this.categoryState = null
                 this.text = ''
-                this.text = null
+                this.textState = null
             },
             handleOk(bvModalEvt) {
                 // Prevent modal from closing
@@ -121,13 +128,23 @@
                 // Trigger submit handler
                 this.handleSubmit()
             },
-            handleSubmit() {
+            async handleSubmit() {
                 // Exit when the form isn't valid
                 if (!this.checkFormValidity()) {
                     return
                 }
 
-                console.log("Message has been pushed")
+                let data = new FormData()
+
+                data.append("category_id", this.category.id)
+                data.append("text", this.text)
+                // console.log(this.category.id, this.text)
+
+                let msg = await this.$axios.$post('http://localhost:8080/messages', data)
+
+                console.log(msg)
+
+                this.resetModal()
 
                 // Hide the modal manually
                 this.$nextTick(() => {
