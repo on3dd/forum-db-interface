@@ -2,20 +2,23 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	uuid "github.com/satori/go.uuid"
 	"log"
 	"net/http"
 	"time"
 )
 
-type TableMessage struct {
+// ForumMessage represents messages in /message
+type ForumMessage struct {
 	Id         uuid.UUID `json:"id"`
-	Author     string    `json:"author"`
+	AuthorId   string    `json:"author_id"`
+	AuthorName string    `json:"author_name"`
 	Text       string    `json:"text"`
-	CategoryId string    `json:"category_id"`
 	PostedAt   time.Time `json:"posted_at"`
 }
 
+// Message represents message instance from DB
 type Message struct {
 	Id         uuid.UUID `json:"id"`
 	Text       string    `json:"text"`
@@ -26,22 +29,14 @@ type Message struct {
 
 func (u *UserController) GetMessages(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	//from, err := strconv.Atoi(r.URL.Query()["from"][0])
-	//if err != nil {
-	//	log.Printf("Cannot convert params from url into int: %v\n", err)
-	//	w.WriteHeader(http.StatusBadRequest)
-	//	return
-	//}
-	//
-	//number, err := strconv.Atoi(r.URL.Query()["number"][0])
-	//if err != nil {
-	//	log.Printf("Cannot convert params from url into int: %v\n", err)
-	//	w.WriteHeader(http.StatusBadRequest)
-	//	return
-	//}
+	queryValues := r.URL.Query()
+	id := queryValues.Get("id")
 
-	messages, err := u.getMessages()
+	log.Println(id)
+
+	messages, err := u.getMessages(id)
 	if err != nil {
 		log.Printf("Cannot extract messages from database: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -55,38 +50,38 @@ func (u *UserController) GetMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
-func (u *UserController) getMessages() ([]TableMessage, error) {
+//80c79ade-c37e-462a-9c91-e4805fd2b183
+func (u *UserController) getMessages(id string) ([]ForumMessage, error) {
 	rows, err := u.db.Query(
-		"SELECT m.id, u.name, m.text, c.id, m.posted_at " +
-			"FROM messages m " +
-			"INNER JOIN categories c ON m.category_id = c.id " +
-			"INNER JOIN users u ON m.author_id = u.id " +
-			//"ORDER BY m.posted_at DESC "+
-			//"LIMIT $1 OFFSET $2",
-			"ORDER BY m.posted_at DESC ",
-		//number, from,
+		fmt.Sprintf(`
+			SELECT m.id, u.id, u.name, m.text, m.posted_at 
+			FROM messages m
+			INNER JOIN users u ON m.author_id = u.id AND m.category_id = '%v'
+			ORDER BY m.posted_at DESC `, id,
+		),
 	)
 	if err != nil {
-		return make([]TableMessage, 0), err
+		return make([]ForumMessage, 0), err
 	}
 
-	var messages []TableMessage
+	var messages []ForumMessage
 	for rows.Next() {
-		msg := TableMessage{}
-		err := rows.Scan(&msg.Id, &msg.Author, &msg.Text, &msg.CategoryId, &msg.PostedAt)
+		msg := ForumMessage{}
+		err := rows.Scan(&msg.Id, &msg.AuthorId, &msg.AuthorName, &msg.Text, &msg.PostedAt)
 		if err != nil {
-			return make([]TableMessage, 0), err
+			return make([]ForumMessage, 0), err
 		}
 		messages = append(messages, msg)
 	}
 
+	log.Println(len(messages))
+
 	if err = rows.Err(); err != nil {
-		return make([]TableMessage, 0), err
+		return make([]ForumMessage, 0), err
 	}
 
 	if len(messages) == 0 {
-		return make([]TableMessage, 0), nil
+		return make([]ForumMessage, 0), nil
 	}
 	return messages, nil
 }
