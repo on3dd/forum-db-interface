@@ -34,8 +34,6 @@ func (u *UserController) GetMessages(w http.ResponseWriter, r *http.Request) {
 	queryValues := r.URL.Query()
 	id := queryValues.Get("id")
 
-	log.Println(id)
-
 	messages, err := u.getMessages(id)
 	if err != nil {
 		log.Printf("Cannot extract messages from database: %v\n", err)
@@ -73,8 +71,6 @@ func (u *UserController) getMessages(id string) ([]ForumMessage, error) {
 		}
 		messages = append(messages, msg)
 	}
-
-	log.Println(len(messages))
 
 	if err = rows.Err(); err != nil {
 		return make([]ForumMessage, 0), err

@@ -4,7 +4,9 @@
     <b-container class="my-3">
       <b-row>
         <b-col>
-          <h1>{{rootCategory.name}}</h1>
+          <div class="d-flex">
+            <h1 class="text-truncate">{{rootCategory.name}}</h1>
+          </div>
         </b-col>
       </b-row>
       <b-row>
@@ -31,12 +33,15 @@
       </b-row>
       <b-row>
         <b-col>
-          <div class="mt-3">
+          <div class="mt-3 d-flex justify-content-between">
             <b-pagination
               v-model="currentPage"
               :total-rows="rows"
               :per-page="perPage">
             </b-pagination>
+            <div>
+              <b-button variant="outline-primary">New message</b-button>
+            </div>
           </div>
         </b-col>
       </b-row>
@@ -45,7 +50,7 @@
           <b-list-group>
             <b-list-group-item v-for="(message, index) in pageMessages" :key="index">
               <div>
-                <h6 class="my-0">{{message.text}}</h6>
+                <h6 class="font-weight-normal my-0">{{message.text}}</h6>
                 <div>
                   <small><a href="">{{message.author_name}}</a></small>
                   <small>{{message.posted_at}}</small>
