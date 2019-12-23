@@ -87,20 +87,22 @@ func (u *UserController) AddMessage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	var message Message
-	err := json.NewDecoder(r.Body).Decode(&message)
-	if err != nil {
-		log.Printf("Cannot decode request body, error: %v\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	log.Println(message.Id, message.Text, message.CategoryId, message.PostedAt, message.AuthorId)
+	message.Text = r.FormValue("text")
+	message.CategoryId, _ = uuid.FromString(r.FormValue("category_id"))
 
 	message.Id, _ = uuid.NewV4()
 	//message.Text = r.FormValue("text")
 	//message.CategoryId, _ = uuid.FromString(r.FormValue("category_id"))
-	message.AuthorId, _ = uuid.FromString("00068953-929c-4b3e-a0f4-f1edae22faac")
+	//message.AuthorId, _ = uuid.FromString("00068953-929c-4b3e-a0f4-f1edae22faac")
 
-	_, err = u.db.Exec("INSERT INTO messages VALUES($1, $2, $3, $4, $5)",
+	row := u.db.QueryRow("SELECT id FROM users ORDER BY id LIMIT 1")
+	if err := row.Scan(&message.AuthorId); err != nil {
+		log.Printf("Cannot get first user from db, error: %v\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	_, err := u.db.Exec("INSERT INTO messages VALUES($1, $2, $3, $4, $5)",
 		message.Id, message.Text, message.CategoryId, time.Now(), message.AuthorId)
 
 	if err != nil {
