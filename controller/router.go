@@ -16,10 +16,10 @@ func (u *UserController) NewRouter() *mux.Router {
 
 	router.HandleFunc("/categories", logHandlerCall(u.GetCategories)).Methods("GET")
 
-	router.HandleFunc("/forum", logHandlerCall(u.GetRootCategory)).Methods("GET")
+	router.HandleFunc("/forum", logHandlerCall(u.GetCategory)).Methods("GET")
 	router.HandleFunc("/forum/subcategories", logHandlerCall(u.GetSubcategories)).Methods("GET")
 	router.HandleFunc("/forum/messages", logHandlerCall(u.GetMessages)).Methods("GET")
-
+	router.HandleFunc("/forum/messages", logHandlerCall(u.AddMessage)).Methods("POST", "OPTIONS")
 
 	return router
 }

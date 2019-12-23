@@ -14,7 +14,7 @@
           <b-list-group>
             <b-list-group-item v-for="(subcategory, index) in subcategories" :key="index">
               <div class="d-flex justify-content-between align-items-center">
-                <h6 class="my-0"><a href="">{{subcategory.name}}</a></h6>
+                <h6 class="my-0"><nuxt-link :to="'/forum/'+subcategory.id">{{subcategory.name}}</nuxt-link></h6>
                 <div class="d-flex">
                   <div class="mr-2 mr-md-3" style="text-align: right">
                     <small class="d-block">Total themes: 2228</small>
@@ -178,9 +178,8 @@
         let data = new FormData()
         data.append("text", this.text)
         data.append("category_id", this.rootCategory.id)
-        console.log(this.rootCategory.id, this.text)
 
-        let msg = await this.$axios.$post('http://localhost:8080/messages', data)
+        let msg = await this.$axios.$post('http://localhost:8080/forum/messages', data)
 
         console.log(msg)
 

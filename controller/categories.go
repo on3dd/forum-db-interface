@@ -15,13 +15,20 @@ type Category struct {
 	ParentId sql.NullString `json:"parent_id,omitempty"`
 }
 
-func (u *UserController) GetRootCategory(w http.ResponseWriter, r *http.Request) {
+func (u *UserController) GetCategory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	row := u.db.QueryRow(
-		"SELECT * FROM categories AS c WHERE c.name = 'Forum'",
-	)
+	queryValues := r.URL.Query()
+	id := queryValues.Get("id")
+
+	var row *sql.Row
+	if len(id) == 0 || id == "" {
+		row = u.db.QueryRow("SELECT * FROM categories AS c WHERE c.name = 'Forum'")
+	} else {
+		row = u.db.QueryRow("SELECT * FROM categories AS c WHERE c.id = $1", id)
+	}
+
 	ct := Category{}
 	if err := row.Scan(&ct.Id, &ct.Name, &ct.ParentId); err != nil {
 		log.Printf("Cannot scan root category, error: %v", err)

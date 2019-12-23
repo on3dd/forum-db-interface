@@ -4,112 +4,83 @@
     <b-container class="my-3">
       <b-row>
         <b-col>
-          <h1>Category name</h1>
-        </b-col>
-      </b-row>
-      <b-row>
-        <b-col>
-          <b-list-group>
-            <b-list-group-item>
-              <div class="d-flex justify-content-between align-items-center">
-                <h6 class="my-0"><a href="">Subcategory name</a></h6>
-                <div class="d-flex">
-                  <div class="mr-2 mr-md-3" style="text-align: right">
-                    <small class="d-block">Total themes: 2228</small>
-                    <small class="d-block">Total messages: 14880</small>
-                  </div>
-                  <div style="text-align: right">
-                    <small class="d-block text-truncate">Last message text</small>
-                    <small class="d-block text-truncate"><a href="">Author name</a></small>
-                  </div>
-                </div>
-              </div>
-            </b-list-group-item>
-            <b-list-group-item>
-              <div class="d-flex justify-content-between align-items-center">
-                <h6 class="my-0"><a href="">Subcategory name</a></h6>
-                <div class="d-flex">
-                  <div class="mr-2 mr-md-3" style="text-align: right">
-                    <small class="d-block">Total themes: 2228</small>
-                    <small class="d-block">Total messages: 14880</small>
-                  </div>
-                  <div style="text-align: right">
-                    <small class="d-block text-truncate">Last message text</small>
-                    <small class="d-block text-truncate"><a href="">Author name</a></small>
-                  </div>
-                </div>
-              </div>
-            </b-list-group-item>
-            <b-list-group-item>
-              <div class="d-flex justify-content-between align-items-center">
-                <h6 class="my-0"><a href="">Subcategory name</a></h6>
-                <div class="d-flex">
-                  <div class="mr-2 mr-md-3" style="text-align: right">
-                    <small class="d-block">Total themes: 2228</small>
-                    <small class="d-block">Total messages: 14880</small>
-                  </div>
-                  <div style="text-align: right">
-                    <small class="d-block text-truncate">Last message text</small>
-                    <small class="d-block text-truncate"><a href="">Author name</a></small>
-                  </div>
-                </div>
-              </div>
-            </b-list-group-item>
-          </b-list-group>
-        </b-col>
-      </b-row>
-      <b-row>
-        <b-col>
-          <div class="mt-3">
-            <b-pagination v-model="currentPage" :total-rows="rows"></b-pagination>
+          <div class="d-flex">
+            <h1 class="text-truncate">{{category.name}}</h1>
           </div>
         </b-col>
       </b-row>
       <b-row>
         <b-col>
           <b-list-group>
-            <b-list-group-item>
-              <div>
-                <h6 class="my-0">Message text</h6>
-                <div>
-                  <small><a href="">Author name</a></small>
-                  <small>21.12.2019 19:00</small>
+            <b-list-group-item v-for="(subcategory, index) in subcategories" :key="index">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="my-0"><nuxt-link :to="'/forum/'+subcategory.id">{{subcategory.name}}</nuxt-link></h6>
+                <div class="d-flex">
+                  <div class="mr-2 mr-md-3" style="text-align: right">
+                    <small class="d-block">Total themes: 2228</small>
+                    <small class="d-block">Total messages: 14880</small>
+                  </div>
+                  <div style="text-align: right">
+                    <small class="d-block text-truncate">Last message text</small>
+                    <small class="d-block text-truncate"><a href="">Author name</a></small>
+                  </div>
                 </div>
               </div>
             </b-list-group-item>
-            <b-list-group-item>
+
+          </b-list-group>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col>
+          <div class="mt-3 d-flex justify-content-between">
+            <b-pagination
+              v-model="currentPage"
+              :total-rows="rows"
+              :per-page="perPage">
+            </b-pagination>
+            <div>
+              <b-button variant="outline-primary" v-b-modal.modal-prevent-closing>New message</b-button>
+              <b-modal
+                id="modal-prevent-closing"
+                ref="modal"
+                title="Create new message"
+                @show="resetModal"
+                @hidden="resetModal"
+                @ok="handleOk"
+              >
+                <form ref="form" @submit.stop.prevent="handleSubmit">
+                  <b-form-group
+                    :state="textState"
+                    label="Message text"
+                    label-for="text-input"
+                    invalid-feedback="Message is required"
+                  >
+                    <b-form-textarea
+                      id="text-input"
+                      v-model="text"
+                      :state="textState"
+                      placeholder="Enter something..."
+                      rows="2"
+                      size="sm"
+                      required
+                    />
+                  </b-form-group>
+                </form>
+              </b-modal>
+            </div>
+          </div>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col>
+          <b-list-group>
+            <b-list-group-item v-for="(message, index) in pageMessages" :key="index">
               <div>
-                <h6 class="my-0">Message text</h6>
+                <h6 class="font-weight-normal my-0">{{message.text}}</h6>
                 <div>
-                  <small><a href="">Author name</a></small>
-                  <small>21.12.2019 19:00</small>
-                </div>
-              </div>
-            </b-list-group-item>
-            <b-list-group-item>
-              <div>
-                <h6 class="my-0">Message text</h6>
-                <div>
-                  <small><a href="">Author name</a></small>
-                  <small>21.12.2019 19:00</small>
-                </div>
-              </div>
-            </b-list-group-item>
-            <b-list-group-item>
-              <div>
-                <h6 class="my-0">Message text</h6>
-                <div>
-                  <small><a href="">Author name</a></small>
-                  <small>21.12.2019 19:00</small>
-                </div>
-              </div>
-            </b-list-group-item>
-            <b-list-group-item>
-              <div>
-                <h6 class="my-0">Message text</h6>
-                <div>
-                  <small><a href="">Author name</a></small>
-                  <small>21.12.2019 19:00</small>
+                  <small><a href="">{{message.author_name}}</a>,</small>
+                  <small>{{message.posted_at}}</small>
                 </div>
               </div>
             </b-list-group-item>
@@ -119,7 +90,11 @@
       <b-row>
         <b-col>
           <div class="mt-3">
-            <b-pagination v-model="currentPage" :total-rows="rows"></b-pagination>
+            <b-pagination
+              v-model="currentPage"
+              :total-rows="rows"
+              :per-page="perPage">
+            </b-pagination>
           </div>
         </b-col>
       </b-row>
@@ -131,14 +106,92 @@
   import Navbar from "~/components/Navbar";
 
   export default {
+    async asyncData({$axios, params, options}) {
+      const category = await $axios.$get('http://localhost:8080/forum',
+        {params: {id: params.id}})
+      let subcategories, messages
+      if (category) {
+        const response_1 = await $axios.$get('http://localhost:8080/forum/subcategories',
+          {params: {id: category.id}})
+        const response_2 = await $axios.$get('http://localhost:8080/forum/messages',
+          {params: {id: category.id}})
+        subcategories = response_1
+        messages = response_2.map(el => {
+          const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            timezone: 'UTC',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric'
+          }
+
+          const timestamp = Date.parse(el.posted_at)
+          el.posted_at = new Date(timestamp).toLocaleDateString("en-US", options)
+
+          return el
+        })
+      }
+
+      return {category: category, subcategories: subcategories, messages: messages}
+    },
     data: () => ({
-      messages: [],
-      rows: 100,
-      currentPage: 1
+      currentPage: 1,
+      perPage: 20,
+      text: '',
+      textState: null,
     }),
     components: {
       Navbar
     },
+    computed: {
+      rows() {
+        return this.messages.length
+      },
+      pageMessages() {
+        const from = (this.currentPage - 1) * 20
+        return this.messages.slice().splice(from, 20)
+      }
+    },
+    methods: {
+      checkFormValidity() {
+        const valid = this.$refs.form.checkValidity()
+        this.textState = valid ? true : false
+        return valid
+      },
+      resetModal() {
+        this.text = ''
+        this.textState = null
+      },
+      handleOk(bvModalEvt) {
+        // Prevent modal from closing
+        bvModalEvt.preventDefault()
+        // Trigger submit handler
+        this.handleSubmit()
+      },
+      async handleSubmit() {
+        // Exit when the form isn't valid
+        if (!this.checkFormValidity()) {
+          return
+        }
+
+        let data = new FormData()
+        data.append("text", this.text)
+        data.append("category_id", this.category.id)
+
+        let msg = await this.$axios.$post('http://localhost:8080/forum/messages', data)
+
+        console.log(msg)
+
+        this.resetModal()
+
+        // Hide the modal manually
+        this.$nextTick(() => {
+          this.$refs.modal.hide()
+        })
+      }
+    }
   }
 </script>
 
