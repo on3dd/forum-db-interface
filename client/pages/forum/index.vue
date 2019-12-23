@@ -40,7 +40,34 @@
               :per-page="perPage">
             </b-pagination>
             <div>
-              <b-button variant="outline-primary">New message</b-button>
+              <b-button variant="outline-primary" v-b-modal.modal-prevent-closing>New message</b-button>
+              <b-modal
+                id="modal-prevent-closing"
+                ref="modal"
+                title="Create new message"
+                @show="resetModal"
+                @hidden="resetModal"
+                @ok="handleOk"
+              >
+                <form ref="form" @submit.stop.prevent="handleSubmit">
+                  <b-form-group
+                    :state="textState"
+                    label="Message text"
+                    label-for="text-input"
+                    invalid-feedback="Message is required"
+                  >
+                    <b-form-textarea
+                      id="text-input"
+                      v-model="text"
+                      :state="textState"
+                      placeholder="Enter something..."
+                      rows="2"
+                      size="sm"
+                      required
+                    />
+                  </b-form-group>
+                </form>
+              </b-modal>
             </div>
           </div>
         </b-col>
@@ -52,7 +79,7 @@
               <div>
                 <h6 class="font-weight-normal my-0">{{message.text}}</h6>
                 <div>
-                  <small><a href="">{{message.author_name}}</a></small>
+                  <small><a href="">{{message.author_name}}</a>,</small>
                   <small>{{message.posted_at}}</small>
                 </div>
               </div>
@@ -79,23 +106,40 @@
   import Navbar from "~/components/Navbar";
 
   export default {
-    async asyncData ({ $axios }) {
+    async asyncData({$axios, options}) {
       const rootCategory = await $axios.$get('http://localhost:8080/forum')
       let subcategories, messages
       if (rootCategory) {
         const response_1 = await $axios.$get('http://localhost:8080/forum/subcategories',
-          {params:{id: rootCategory.id}})
+          {params: {id: rootCategory.id}})
         const response_2 = await $axios.$get('http://localhost:8080/forum/messages',
-          {params:{id: rootCategory.id}})
+          {params: {id: rootCategory.id}})
         subcategories = response_1
-        messages = response_2
+        messages = response_2.map(el => {
+          const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            timezone: 'UTC',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric'
+          }
+
+          const timestamp = Date.parse(el.posted_at)
+          el.posted_at = new Date(timestamp).toLocaleDateString("en-US", options)
+
+          return el
+        })
       }
 
-      return { rootCategory: rootCategory, subcategories: subcategories, messages: messages }
+      return {rootCategory: rootCategory, subcategories: subcategories, messages: messages}
     },
     data: () => ({
       currentPage: 1,
       perPage: 20,
+      text: '',
+      textState: null,
     }),
     components: {
       Navbar
@@ -109,6 +153,45 @@
         return this.messages.slice().splice(from, 20)
       }
     },
+    methods: {
+      checkFormValidity() {
+        const valid = this.$refs.form.checkValidity()
+        this.textState = valid ? true : false
+        return valid
+      },
+      resetModal() {
+        this.text = ''
+        this.textState = null
+      },
+      handleOk(bvModalEvt) {
+        // Prevent modal from closing
+        bvModalEvt.preventDefault()
+        // Trigger submit handler
+        this.handleSubmit()
+      },
+      async handleSubmit() {
+        // Exit when the form isn't valid
+        if (!this.checkFormValidity()) {
+          return
+        }
+
+        let data = new FormData()
+        data.append("text", this.text)
+        data.append("category_id", this.rootCategory.id)
+        console.log(this.rootCategory.id, this.text)
+
+        let msg = await this.$axios.$post('http://localhost:8080/messages', data)
+
+        console.log(msg)
+
+        this.resetModal()
+
+        // Hide the modal manually
+        this.$nextTick(() => {
+          this.$refs.modal.hide()
+        })
+      }
+    }
   }
 </script>
 
