@@ -16,9 +16,6 @@ type Category struct {
 }
 
 func (u *UserController) GetCategory(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
 	queryValues := r.URL.Query()
 	id := queryValues.Get("id")
 
@@ -45,9 +42,6 @@ func (u *UserController) GetCategory(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *UserController) GetSubcategories(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
 	queryValues := r.URL.Query()
 	id := queryValues.Get("id")
 
@@ -101,8 +95,6 @@ func (u *UserController) getSubcategories(id string) ([]Category, error) {
 }
 
 func (u *UserController) GetCategories(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	categories, err := u.getCategories()
 	if err != nil {
 		log.Printf("Cannot extract categories from database: %v\n", err)

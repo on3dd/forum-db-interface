@@ -28,9 +28,6 @@ type Message struct {
 }
 
 func (u *UserController) GetMessages(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
 	queryValues := r.URL.Query()
 	id := queryValues.Get("id")
 
@@ -83,9 +80,6 @@ func (u *UserController) getMessages(id string) ([]ForumMessage, error) {
 }
 
 func (u *UserController) AddMessage(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
 	var message Message
 	message.Text = r.FormValue("text")
 	message.CategoryId, _ = uuid.FromString(r.FormValue("category_id"))
