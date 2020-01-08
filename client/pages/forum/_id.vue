@@ -1,6 +1,5 @@
 <template>
   <div>
-    <Navbar></Navbar>
     <b-container class="my-3">
       <b-row>
         <b-col>
@@ -103,8 +102,6 @@
 </template>
 
 <script>
-  import Navbar from "~/components/Navbar";
-
   export default {
     async asyncData({$axios, params, options}) {
       const category = await $axios.$get('http://localhost:8080/forum',
@@ -142,9 +139,6 @@
       text: '',
       textState: null,
     }),
-    components: {
-      Navbar
-    },
     computed: {
       rows() {
         return this.messages.length
